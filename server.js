@@ -79,7 +79,8 @@ app.post("/predict", (req, res) => {
 });
 
 // ============================
-const PORT = 5001;
-app.listen(PORT, () =>
-  console.log(`Server jalan di http://localhost:${PORT}`)
-);
+const port = process.env.PORT || 5001;
+
+app.listen(port, "0.0.0.0", () => {
+  console.log(`Server jalan di port ${port}`);
+});
