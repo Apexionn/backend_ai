@@ -1,50 +1,49 @@
 const express = require("express");
 const cors = require("cors");
-const { spawn } = require("child_process");
-const path = require("path");
+const axios = require("axios");
 
 const app = express();
 
-// CORS bebas (untuk deploy)
-app.use(cors());
+// === CORS ===
+app.use(cors({
+  origin: "*",
+  methods: ["GET", "POST"],
+  allowedHeaders: ["Content-Type"],
+}));
 app.use(express.json());
+
+const HF_API = "https://apexion-crop-yield-prediction.hf.space/api/predict";
 
 app.get("/", (req, res) => {
   res.send("Backend aktif ✔️");
 });
 
-app.post("/predict", (req, res) => {
+app.post("/predict", async (req, res) => {
   console.log("REQUEST MASUK:", req.body);
 
-  const py = spawn("python3", [
-    path.join(__dirname, "ML/app.py"),
-    JSON.stringify(req.body)
-  ]);
+  try {
+    const payload = { data: [req.body] };
 
-  let output = "";
-  let errorOutput = "";
+    const response = await axios.post(HF_API, payload, {
+      headers: { "Content-Type": "application/json" },
+      timeout: 60000
+    });
 
-  py.stdout.on("data", (data) => output += data.toString());
-  py.stderr.on("data", (data) => {
-    errorOutput += data.toString();
-    console.error("PYTHON ERROR:", data.toString());
-  });
+    console.log("HASIL HF:", response.data);
 
-  py.on("close", () => {
-    if (errorOutput) console.error("PY ERROR FULL:", errorOutput);
+    const hasil = response.data.data?.[0] || response.data;
 
-    try {
-      res.json(JSON.parse(output));
-    } catch (e) {
-      res.status(500).json({
-        error: "Python output tidak valid",
-        raw: output
-      });
-    }
-  });
+    res.json(hasil);
+
+  } catch (err) {
+    console.error("HF ERROR:", err.response?.data || err.message);
+
+    res.status(500).json({
+      error: "Gagal mengambil prediksi dari HuggingFace",
+      detail: err.response?.data || err.message
+    });
+  }
 });
 
 const port = process.env.PORT || 5001;
-app.listen(port, "0.0.0.0", () => {
-  console.log(`Server jalan di port ${port}`);
-});
+app.listen(port, () => console.log(`Server berjalan di port ${port}`));
