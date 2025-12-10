@@ -12,6 +12,7 @@ app.use(cors({
 }));
 app.use(express.json());
 
+
 const HF_API = "https://apexion-crop-yield-prediction.hf.space/predict";
 
 app.get("/", (req, res) => {
@@ -22,6 +23,7 @@ app.post("/predict", async (req, res) => {
   console.log("REQUEST MASUK:", req.body);
 
   try {
+    // Format body harus { data: [...] } sesuai Gradio rules
     const payload = { data: [req.body] };
 
     const response = await axios.post(HF_API, payload, {
