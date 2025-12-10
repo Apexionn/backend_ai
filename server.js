@@ -23,24 +23,24 @@ app.post("/predict", async (req, res) => {
   console.log("REQUEST KE BACKEND:", req.body);
 
   try {
-    const response = await axios.post(HF_API, {
-      data: req.body   // PERBAIKAN DI SINI
-    }, {
+    const response = await axios.post(HF_API, req.body, {  
       headers: { "Content-Type": "application/json" },
       timeout: 30000
     });
 
-    console.log("HASIL HF:", response.data);
+    console.log("HASIL DARI HF:", response.data);
     res.json(response.data);
-    
+
   } catch (err) {
-    console.error("ERROR HF:", err.message);
+    console.error("ERROR HF:", err.response?.data || err.message);
+
     res.status(500).json({
       error: "Gagal mengambil hasil prediksi dari HuggingFace",
       detail: err.response?.data || err.message
     });
   }
 });
+
 
 
 const port = process.env.PORT || 5001;
