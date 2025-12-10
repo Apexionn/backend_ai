@@ -12,7 +12,7 @@ app.use(cors({
 }));
 app.use(express.json());
 
-const HF_API = "https://apexion-crop-yield-prediction.hf.space/api/predict";
+const HF_API = "https://apexion-crop-yield-prediction.hf.space/predict";
 
 app.get("/", (req, res) => {
   res.send("Backend aktif ✔️");
