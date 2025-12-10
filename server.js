@@ -20,32 +20,28 @@ app.get("/", (req, res) => {
 });
 
 app.post("/predict", async (req, res) => {
-  console.log("REQUEST MASUK:", req.body);
+  console.log("REQUEST KE BACKEND:", req.body);
 
   try {
-    // Format body harus { data: [...] } sesuai Gradio rules
-    const payload = { data: [req.body] };
-
-    const response = await axios.post(HF_API, payload, {
+    const response = await axios.post(HF_API, {
+      data: req.body   // PERBAIKAN DI SINI
+    }, {
       headers: { "Content-Type": "application/json" },
-      timeout: 60000
+      timeout: 30000
     });
 
     console.log("HASIL HF:", response.data);
-
-    const hasil = response.data.data?.[0] || response.data;
-
-    res.json(hasil);
-
+    res.json(response.data);
+    
   } catch (err) {
-    console.error("HF ERROR:", err.response?.data || err.message);
-
+    console.error("ERROR HF:", err.message);
     res.status(500).json({
-      error: "Gagal mengambil prediksi dari HuggingFace",
+      error: "Gagal mengambil hasil prediksi dari HuggingFace",
       detail: err.response?.data || err.message
     });
   }
 });
+
 
 const port = process.env.PORT || 5001;
 app.listen(port, () => console.log(`Server berjalan di port ${port}`));
